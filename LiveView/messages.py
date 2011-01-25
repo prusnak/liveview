@@ -2,7 +2,7 @@ import struct
 import time
 import sys
 
-CLIENT_SOFTWARE_VERSION = '0.0.3'
+CLIENT_SOFTWARE_VERSION = "0.0.3"
 
 MSG_GETCAPS             = 1
 MSG_GETCAPS_RESP        = 2
@@ -108,7 +108,6 @@ def DecodeLVMessage(msg):
     return (messageId, payload, msgLength)
 
 def Decode(msg):
-
     result = []
     consumed = 0
     while consumed < len(msg):

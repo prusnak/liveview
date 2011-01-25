@@ -11,24 +11,25 @@ class Server:
     __client = None
 
     def __init__(self):
-        self.testPng = open('test.png').read()
+        self.testPng = open("test.png").read()
 
     def start(self):
         try:
             import bluetooth
         except:
-            print >>sys.stderr, 'Python module pybluez not installed.'
+            print >>sys.stderr, "Python module pybluez not installed."
             sys.exit(1)
         try:
             self.__server = bluetooth.BluetoothSocket( bluetooth.RFCOMM )
-            self.__server.bind(('',1))
+            self.__server.bind(("",1))
             self.__server.listen(1)
             bluetooth.advertise_service(self.__server, "LiveView", service_classes = [ bluetooth.SERIAL_PORT_CLASS ], profiles = [ bluetooth.SERIAL_PORT_PROFILE ] )
         except:
-            print >>sys.stderr, 'Could not start a bluetooth server.'
+            print >>sys.stderr, "Could not start a bluetooth server."
             sys.exit(2)
         self.__client, address = self.__server.accept()
         self.__client.send(messages.EncodeGetCaps())
+        self.loop()
 
     def __del__(self):
         if self.__server:
@@ -39,10 +40,9 @@ class Server:
     def loop(self):
         while True:
             for msg in messages.Decode(self.__client.recv(4096)):
-
                 if isinstance(msg, messages.Result):
                     if msg.code != messages.RESULT_OK:
-                        print '---- NON-OK result received ----'
+                        print "---- NON-OK result received ----"
                         print msg
                         continue
 
@@ -55,16 +55,16 @@ class Server:
                     self.__client.send(messages.EncodeGetMenuItemResponse(3, True, 0, "Menu3", self.testPng))
 
                 elif isinstance(msg, messages.GetMenuItem):
-                    print '---- GetMenuItem received ----'
+                    print "---- GetMenuItem received ----"
                     # FIXME: do something!
 
                 elif isinstance(msg, messages.DisplayCapabilities):
                     deviceCapabilities = msg
                     self.__client.send(messages.EncodeSetMenuSize(4))
-                    self.__client.send(messages.EncodeSetMenuSettings(menuVibrationTime, 0))
+                    self.__client.send(messages.EncodeSetMenuSettings(self.menuVibrationTime, 0))
 
                 elif isinstance(msg, messages.GetTime):
-                    self.__client.send(messages.EncodeGetTimeResponse(time.time(), is24HourClock))
+                    self.__client.send(messages.EncodeGetTimeResponse(time.time(), self.is24HourClock))
 
                 elif isinstance(msg, messages.DeviceStatus):
                     self.__client.send(messages.EncodeDeviceStatusAck())
