@@ -28,7 +28,7 @@ class Server:
             print >>sys.stderr, "Could not start a bluetooth server."
             sys.exit(2)
         self.__client, address = self.__server.accept()
-        self.__client.send(messages.EncodeGetCaps())
+        self.__client.send(messages.encodeGetCaps())
         self.loop()
 
     def __del__(self):
@@ -42,20 +42,20 @@ class Server:
 
     def loop(self):
         while True:
-            for msg in messages.Decode(self.__client.recv(4096)):
+            for msg in messages.decode(self.__client.recv(4096)):
                 if isinstance(msg, messages.Result):
                     if msg.code != messages.RESULT_OK:
                         print "---- NON-OK result received ----"
                         print msg
                         continue
 
-                self.send(messages.EncodeAck(msg.messageId))
+                self.send(messages.encodeAck(msg.messageId))
 
                 if isinstance(msg, messages.GetMenuItems):
-                    self.send(messages.EncodeGetMenuItemResponse(0, True, 0, "Menu0", self.testPng))
-                    self.send(messages.EncodeGetMenuItemResponse(1, False, 20, "Menu1", self.testPng))
-                    self.send(messages.EncodeGetMenuItemResponse(2, False, 0, "Menu2", self.testPng))
-                    self.send(messages.EncodeGetMenuItemResponse(3, True, 0, "Menu3", self.testPng))
+                    self.send(messages.encodeGetMenuItemResponse(0, True, 0, "Menu0", self.testPng))
+                    self.send(messages.encodeGetMenuItemResponse(1, False, 20, "Menu1", self.testPng))
+                    self.send(messages.encodeGetMenuItemResponse(2, False, 0, "Menu2", self.testPng))
+                    self.send(messages.encodeGetMenuItemResponse(3, True, 0, "Menu3", self.testPng))
 
                 elif isinstance(msg, messages.GetMenuItem):
                     print "---- GetMenuItem received ----"
@@ -63,46 +63,46 @@ class Server:
 
                 elif isinstance(msg, messages.DisplayCapabilities):
                     deviceCapabilities = msg
-                    self.send(messages.EncodeSetMenuSize(4))
-                    self.send(messages.EncodeSetMenuSettings(self.menuVibrationTime, 0))
+                    self.send(messages.encodeSetMenuSize(4))
+                    self.send(messages.encodeSetMenuSettings(self.menuVibrationTime, 0))
 
                 elif isinstance(msg, messages.GetTime):
-                    self.send(messages.EncodeGetTimeResponse(time.time(), self.is24HourClock))
+                    self.send(messages.encodeGetTimeResponse(time.time(), self.is24HourClock))
 
                 elif isinstance(msg, messages.DeviceStatus):
-                    self.send(messages.EncodeDeviceStatusAck())
+                    self.send(messages.encodeDeviceStatusAck())
 
                 elif isinstance(msg, messages.GetAlert):
-                    self.send(messages.EncodeGetAlertResponse(20, 4, 15, "TIME", "HEADER", "01234567890123456789012345678901234567890123456789", self.testPng))
+                    self.send(messages.encodeGetAlertResponse(20, 4, 15, "TIME", "HEADER", "01234567890123456789012345678901234567890123456789", self.testPng))
 
                 elif isinstance(msg, messages.Navigation):
-                    self.send(messages.EncodeNavigationResponse(messages.RESULT_EXIT))
+                    self.send(messages.encodeNavigationResponse(messages.RESULT_EXIT))
 
-#                    self.send(messages.EncodeSetMenuSize(0))
-#                    self.send(messages.EncodeClearDisplay())
-#                    self.send(messages.EncodeDisplayBitmap(100, 100, self.testPng))
-#                    self.send(messages.EncodeSetScreenMode(50, False))
-#                    self.send(messages.EncodeDisplayText("WOOOOOOOOOOOO"))
+#                    self.send(messages.encodeSetMenuSize(0))
+#                    self.send(messages.encodeClearDisplay())
+#                    self.send(messages.encodeDisplayBitmap(100, 100, self.testPng))
+#                    self.send(messages.encodeSetScreenMode(50, False))
+#                    self.send(messages.encodeDisplayText("WOOOOOOOOOOOO"))
 
-#                    self.send(messages.EncodeLVMessage(31, ""))
+#                    self.send(messages.encodeLVMessage(31, ""))
 
-#                    self.send(messages.EncodeSetScreenMode(0, False))
-#                    self.send(messages.EncodeClearDisplay())
-#                    self.send(messages.EncodeLVMessage(48, struct.pack(">B", 38) + "moo"))
+#                    self.send(messages.encodeSetScreenMode(0, False))
+#                    self.send(messages.encodeClearDisplay())
+#                    self.send(messages.encodeLVMessage(48, struct.pack(">B", 38) + "moo"))
 
 #                    tmpxxx = "MOOO"
-#                    self.send(messages.EncodeSetMenuSize(4))
-#                    self.send(messages.EncodeDisplayText("moo"))
+#                    self.send(messages.encodeSetMenuSize(4))
+#                    self.send(messages.encodeDisplayText("moo"))
 
-#                    self.send(messages.EncodeSetStatusBar(tmp.menuItemId, 200, self.testPng))
-#                    self.send(EncodeLVMessage(5, messages.EncodeUIPayload(isAlertItem, totalAlerts, unreadAlerts, curAlert, menuItemId, top, mid, body, itemBitmap)))
+#                    self.send(messages.encodeSetStatusBar(tmp.menuItemId, 200, self.testPng))
+#                    self.send(encodeLVMessage(5, messages.encodeUIPayload(isAlertItem, totalAlerts, unreadAlerts, curAlert, menuItemId, top, mid, body, itemBitmap)))
 
                     if msg.navType == messages.NAVTYPE_DOWN:
                         if not msg.wasInAlert:
-                            self.send(messages.EncodeDisplayPanel("TOOOOOOOOOOOOOOOOOP", "BOTTTTTTTTTTTTTTTTTOM", self.testPng, False))
-#                        self.send(messages.EncodeNavigationAck(messages.RESULT_OK))
-#                        self.send(messages.EncodeDisplayText("ADQ WOS HERE"))
+                            self.send(messages.encodeDisplayPanel("TOOOOOOOOOOOOOOOOOP", "BOTTTTTTTTTTTTTTTTTOM", self.testPng, False))
+#                        self.send(messages.encodeNavigationAck(messages.RESULT_OK))
+#                        self.send(messages.encodeDisplayText("ADQ WOS HERE"))
 #                    elif tmp.navType == messages.NAVTYPE_SELECT:
-#                        self.send(messages.EncodeNavigationAck(messages.RESULT_EXIT))
-#                    self.send(messages.EncodeSetVibrate(1, 1000))
+#                        self.send(messages.encodeNavigationAck(messages.RESULT_EXIT))
+#                    self.send(messages.encodeSetVibrate(1, 1000))
                 print msg

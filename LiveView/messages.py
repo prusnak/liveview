@@ -91,7 +91,7 @@ BRIGHTNESS_DIM          = 49
 BRIGHTNESS_MAX          = 50
 
 
-def DecodeLVMessage(msg):
+def decodeLVMessage(msg):
     (messageId, headerLen, payloadLen) = struct.unpack(">BBL", msg[0:6])
     msgLength = 2 + headerLen + payloadLen
     payload = msg[2 + headerLen: msgLength]
@@ -107,11 +107,11 @@ def DecodeLVMessage(msg):
 
     return (messageId, payload, msgLength)
 
-def Decode(msg):
+def decode(msg):
     result = []
     consumed = 0
     while consumed < len(msg):
-        (messageId, payload, msgLength) = DecodeLVMessage(msg[consumed:])
+        (messageId, payload, msgLength) = decodeLVMessage(msg[consumed:])
         consumed += msgLength
 
         if messageId == MSG_GETCAPS_RESP:
@@ -157,37 +157,37 @@ def Decode(msg):
 
     return result
 
-def EncodeLVMessage(messageId, data):
+def encodeLVMessage(messageId, data):
     return struct.pack(">BBL", messageId, 4, len(data)) + data
 
-def EncodeGetCaps():
-    return EncodeLVMessage(MSG_GETCAPS, struct.pack(">B", len(CLIENT_SOFTWARE_VERSION)) + CLIENT_SOFTWARE_VERSION)
+def encodeGetCaps():
+    return encodeLVMessage(MSG_GETCAPS, struct.pack(">B", len(CLIENT_SOFTWARE_VERSION)) + CLIENT_SOFTWARE_VERSION)
 
-def EncodeSetVibrate(delayTime, onTime):
-    return EncodeLVMessage(MSG_SETVIBRATE, struct.pack(">HH", delayTime, onTime))
+def encodeSetVibrate(delayTime, onTime):
+    return encodeLVMessage(MSG_SETVIBRATE, struct.pack(">HH", delayTime, onTime))
 
-def EncodeSetLED(r, g, b, delayTime, onTime):
-    return EncodeLVMessage(MSG_SETLED, struct.pack(">HHH", ((r & 0x31) << 10) | ((g & 0x31) << 5) | (b & 0x31), delayTime, onTime))
+def encodeSetLED(r, g, b, delayTime, onTime):
+    return encodeLVMessage(MSG_SETLED, struct.pack(">HHH", ((r & 0x31) << 10) | ((g & 0x31) << 5) | (b & 0x31), delayTime, onTime))
 
-def EncodeSetMenuSize(menuSize):
-    return EncodeLVMessage(MSG_SETMENUSIZE, struct.pack(">B", menuSize))
+def encodeSetMenuSize(menuSize):
+    return encodeLVMessage(MSG_SETMENUSIZE, struct.pack(">B", menuSize))
 
-def EncodeAck(ackMessageId):
-    return EncodeLVMessage(MSG_ACK, struct.pack(">B", ackMessageId))
+def encodeAck(ackMessageId):
+    return encodeLVMessage(MSG_ACK, struct.pack(">B", ackMessageId))
 
-def EncodeDeviceStatusAck():
-    return EncodeLVMessage(MSG_DEVICESTATUS_ACK, struct.pack(">B", RESULT_OK))
+def encodeDeviceStatusAck():
+    return encodeLVMessage(MSG_DEVICESTATUS_ACK, struct.pack(">B", RESULT_OK))
 
-def EncodeGetMenuItemResponse(menuItemId, isAlertItem, unreadCount, text, itemBitmap):
+def encodeGetMenuItemResponse(menuItemId, isAlertItem, unreadCount, text, itemBitmap):
     payload = struct.pack(">BHHHBB", not isAlertItem, 0, unreadCount, 0, menuItemId + 3, 0)    # final 0 is for plaintext vs bitmapimage (1) strings
     payload += struct.pack(">H", 0)             # unused string
     payload += struct.pack(">H", 0)             # unused string
     payload += struct.pack(">H", len(text)) + text
     payload += itemBitmap
 
-    return EncodeLVMessage(MSG_GETMENUITEM_RESP, payload)
+    return encodeLVMessage(MSG_GETMENUITEM_RESP, payload)
 
-def EncodeDisplayPanel(topText, bottomText, bitmap, alertUser):
+def encodeDisplayPanel(topText, bottomText, bitmap, alertUser):
 
     id = 80
     if not alertUser:
@@ -199,14 +199,14 @@ def EncodeDisplayPanel(topText, bottomText, bitmap, alertUser):
     payload += struct.pack(">H", len(bottomText)) + bottomText
     payload += bitmap
 
-    return EncodeLVMessage(MSG_DISPLAYPANEL, payload)
+    return encodeLVMessage(MSG_DISPLAYPANEL, payload)
 
-def EncodeDisplayBitmap(x, y, bitmap):
+def encodeDisplayBitmap(x, y, bitmap):
     # Only works if you have sent SetMenuItems(0)
     # Meaning of byte 2 is unknown, but /is/ important!
-    return EncodeLVMessage(MSG_DISPLAYBITMAP, struct.pack(">BBB", x, y, 1) + bitmap)
+    return encodeLVMessage(MSG_DISPLAYBITMAP, struct.pack(">BBB", x, y, 1) + bitmap)
 
-def EncodeSetStatusBar(menuItemId, unreadAlerts, itemBitmap):
+def encodeSetStatusBar(menuItemId, unreadAlerts, itemBitmap):
     # Note that menu item#0 is treated specially if you have non-zero unreadAlerts...
     # Its value will be automatically updated from the other menu items... e.g. if item #3 currently has 20, and is changed to 200 with this call, item#0 will automatically be set to 180 (200-20). Slightly annoying!
 
@@ -216,36 +216,36 @@ def EncodeSetStatusBar(menuItemId, unreadAlerts, itemBitmap):
     payload += struct.pack(">H", 0)
     payload += itemBitmap
 
-    return EncodeLVMessage(MSG_SETSTATUSBAR, payload)
+    return encodeLVMessage(MSG_SETSTATUSBAR, payload)
 
-def EncodeGetTimeResponse(time, is24HourDisplay):
-    return EncodeLVMessage(MSG_GETTIME_RESP, struct.pack(">LB", time, not is24HourDisplay))
+def encodeGetTimeResponse(time, is24HourDisplay):
+    return encodeLVMessage(MSG_GETTIME_RESP, struct.pack(">LB", time, not is24HourDisplay))
 
-def EncodeNavigationResponse(result):
-    return EncodeLVMessage(MSG_NAVIGATION_RESP, struct.pack(">B", result))
+def encodeNavigationResponse(result):
+    return encodeLVMessage(MSG_NAVIGATION_RESP, struct.pack(">B", result))
 
-def EncodeSetScreenMode(brightness, auto):
+def encodeSetScreenMode(brightness, auto):
     # Only works if you have sent SetMenuItems(0)
     v = brightness << 1
     if auto:
         v |= 1
-    return EncodeLVMessage(MSG_SETSCREENMODE, struct.pack(">B", v))
+    return encodeLVMessage(MSG_SETSCREENMODE, struct.pack(">B", v))
 
-def EncodeGetScreenMode():
+def encodeGetScreenMode():
     # Only works if you have sent SetMenuItems(0)
-    return EncodeLVMessage(MSG_GETSCREENMODE, "")
+    return encodeLVMessage(MSG_GETSCREENMODE, "")
 
-def EncodeClearDisplay():
+def encodeClearDisplay():
     # Only works if you have sent SetMenuItems(0)
-    return EncodeLVMessage(MSG_CLEARDISPLAY, "")
+    return encodeLVMessage(MSG_CLEARDISPLAY, "")
 
-def EncodeSetMenuSettings(vibrationTime, initialMenuItemId):
+def encodeSetMenuSettings(vibrationTime, initialMenuItemId):
     # This message is never acked for some reason.
     # vibrationTime is in units of approximately 100ms
 
-    return EncodeLVMessage(MSG_SETMENUSETTINGS, struct.pack(">BBB", vibrationTime, 12, initialMenuItemId)) # 12 is "font size" - doesn't seem to change anything though!
+    return encodeLVMessage(MSG_SETMENUSETTINGS, struct.pack(">BBB", vibrationTime, 12, initialMenuItemId)) # 12 is "font size" - doesn't seem to change anything though!
 
-def EncodeGetAlertResponse(totalCount, unreadCount, alertIndex, timestampText, headerText, bodyTextChunk, bitmap):
+def encodeGetAlertResponse(totalCount, unreadCount, alertIndex, timestampText, headerText, bodyTextChunk, bitmap):
     payload = struct.pack(">BHHHBB", 0, totalCount, unreadCount, alertIndex, 0, 0)    # final 0 is for plaintext vs bitmapimage (1) strings
     payload += struct.pack(">H", len(timestampText)) + timestampText
     payload += struct.pack(">H", len(headerText)) + headerText
@@ -253,11 +253,11 @@ def EncodeGetAlertResponse(totalCount, unreadCount, alertIndex, timestampText, h
     payload += struct.pack(">B", 0)
     payload += struct.pack(">L", len(bitmap)) + bitmap
 
-    return EncodeLVMessage(MSG_GETALERT_RESP, payload)
+    return encodeLVMessage(MSG_GETALERT_RESP, payload)
 
-def EncodeDisplayText(s):
+def encodeDisplayText(s):
     # FIXME: doesn't seem to do anything!
-    return EncodeLVMessage(MSG_DISPLAYTEXT, struct.pack(">B", 0) + s)
+    return encodeLVMessage(MSG_DISPLAYTEXT, struct.pack(">B", 0) + s)
 
 
 class DisplayCapabilities:
