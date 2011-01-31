@@ -1,3 +1,6 @@
+# this file is licensed under MIT License
+# see LICENSE for license details
+
 import messages
 import sys
 import time
@@ -9,6 +12,7 @@ class Server:
     is24HourClock = True
     __server = None
     __client = None
+    menuItems = []
 
     def __init__(self):
         self.testPng = open("test.png").read()
@@ -29,7 +33,7 @@ class Server:
             sys.exit(2)
         self.__client, address = self.__server.accept()
         self.__client.send(messages.encodeGetCaps())
-        self.loop()
+        self.__loop()
 
     def __del__(self):
         if self.__server:
@@ -37,10 +41,10 @@ class Server:
         if self.__client:
             self.__client.close()
 
-    def send(self, msg):
+    def __send(self, msg):
         self.__client.send(msg)
 
-    def loop(self):
+    def __loop(self):
         while True:
             for msg in messages.decode(self.__client.recv(4096)):
                 if isinstance(msg, messages.Result):
@@ -49,13 +53,11 @@ class Server:
                         print msg
                         continue
 
-                self.send(messages.encodeAck(msg.messageId))
+                self.__send(messages.encodeAck(msg.messageId))
 
                 if isinstance(msg, messages.GetMenuItems):
-                    self.send(messages.encodeGetMenuItemResponse(0, True, 0, "Menu0", self.testPng))
-                    self.send(messages.encodeGetMenuItemResponse(1, False, 20, "Menu1", self.testPng))
-                    self.send(messages.encodeGetMenuItemResponse(2, False, 0, "Menu2", self.testPng))
-                    self.send(messages.encodeGetMenuItemResponse(3, True, 0, "Menu3", self.testPng))
+                    for idx, item in enumerate(self.items):
+                        self.__send(messages.encodeGetMenuItemResponse(idx, item.isAlert, item.unreadCount, item.text, item.bitmap))
 
                 elif isinstance(msg, messages.GetMenuItem):
                     print "---- GetMenuItem received ----"
@@ -63,46 +65,24 @@ class Server:
 
                 elif isinstance(msg, messages.DisplayCapabilities):
                     deviceCapabilities = msg
-                    self.send(messages.encodeSetMenuSize(4))
-                    self.send(messages.encodeSetMenuSettings(self.menuVibrationTime, 0))
+                    self.__send(messages.encodeSetMenuSize(len(self.menuItems))
+                    self.__send(messages.encodeSetMenuSettings(self.menuVibrationTime, 0))
 
                 elif isinstance(msg, messages.GetTime):
-                    self.send(messages.encodeGetTimeResponse(time.time(), self.is24HourClock))
+                    self.__send(messages.encodeGetTimeResponse(time.time(), self.is24HourClock))
 
                 elif isinstance(msg, messages.DeviceStatus):
-                    self.send(messages.encodeDeviceStatusAck())
+                    self.__send(messages.encodeDeviceStatusAck())
 
                 elif isinstance(msg, messages.GetAlert):
-                    self.send(messages.encodeGetAlertResponse(20, 4, 15, "TIME", "HEADER", "01234567890123456789012345678901234567890123456789", self.testPng))
+                    pass
+                    # FIXME: fill implementation
 
                 elif isinstance(msg, messages.Navigation):
-                    self.send(messages.encodeNavigationResponse(messages.RESULT_EXIT))
+                    self.__send(messages.encodeNavigationResponse(messages.RESULT_EXIT))
+                    # FIXME: handle events according to navType
 
-#                    self.send(messages.encodeSetMenuSize(0))
-#                    self.send(messages.encodeClearDisplay())
-#                    self.send(messages.encodeDisplayBitmap(100, 100, self.testPng))
-#                    self.send(messages.encodeSetScreenMode(50, False))
-#                    self.send(messages.encodeDisplayText("WOOOOOOOOOOOO"))
-
-#                    self.send(messages.encodeLVMessage(31, ""))
-
-#                    self.send(messages.encodeSetScreenMode(0, False))
-#                    self.send(messages.encodeClearDisplay())
-#                    self.send(messages.encodeLVMessage(48, struct.pack(">B", 38) + "moo"))
-
-#                    tmpxxx = "MOOO"
-#                    self.send(messages.encodeSetMenuSize(4))
-#                    self.send(messages.encodeDisplayText("moo"))
-
-#                    self.send(messages.encodeSetStatusBar(tmp.menuItemId, 200, self.testPng))
-#                    self.send(encodeLVMessage(5, messages.encodeUIPayload(isAlertItem, totalAlerts, unreadAlerts, curAlert, menuItemId, top, mid, body, itemBitmap)))
-
-                    if msg.navType == messages.NAVTYPE_DOWN:
-                        if not msg.wasInAlert:
-                            self.send(messages.encodeDisplayPanel("TOOOOOOOOOOOOOOOOOP", "BOTTTTTTTTTTTTTTTTTOM", self.testPng, False))
-#                        self.send(messages.encodeNavigationAck(messages.RESULT_OK))
-#                        self.send(messages.encodeDisplayText("ADQ WOS HERE"))
-#                    elif tmp.navType == messages.NAVTYPE_SELECT:
-#                        self.send(messages.encodeNavigationAck(messages.RESULT_EXIT))
-#                    self.send(messages.encodeSetVibrate(1, 1000))
                 print msg
+
+    def setMenuItems(self, items):
+        self.menuItems = items

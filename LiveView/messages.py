@@ -1,3 +1,6 @@
+# this file is licensed under MIT License
+# see LICENSE for license details
+
 import struct
 import time
 import sys
@@ -178,12 +181,12 @@ def encodeAck(ackMessageId):
 def encodeDeviceStatusAck():
     return encodeLVMessage(MSG_DEVICESTATUS_ACK, struct.pack(">B", RESULT_OK))
 
-def encodeGetMenuItemResponse(menuItemId, isAlertItem, unreadCount, text, itemBitmap):
-    payload = struct.pack(">BHHHBB", not isAlertItem, 0, unreadCount, 0, menuItemId + 3, 0)    # final 0 is for plaintext vs bitmapimage (1) strings
+def encodeGetMenuItemResponse(menuItemId, isAlert, unreadCount, text, bitmap):
+    payload = struct.pack(">BHHHBB", not isAlert, 0, unreadCount, 0, menuItemId + 3, 0)    # final 0 is for plaintext vs bitmapimage (1) strings
     payload += struct.pack(">H", 0)             # unused string
     payload += struct.pack(">H", 0)             # unused string
     payload += struct.pack(">H", len(text)) + text
-    payload += itemBitmap
+    payload += bitmap
 
     return encodeLVMessage(MSG_GETMENUITEM_RESP, payload)
 
@@ -206,7 +209,7 @@ def encodeDisplayBitmap(x, y, bitmap):
     # Meaning of byte 2 is unknown, but /is/ important!
     return encodeLVMessage(MSG_DISPLAYBITMAP, struct.pack(">BBB", x, y, 1) + bitmap)
 
-def encodeSetStatusBar(menuItemId, unreadAlerts, itemBitmap):
+def encodeSetStatusBar(menuItemId, unreadAlerts, bitmap):
     # Note that menu item#0 is treated specially if you have non-zero unreadAlerts...
     # Its value will be automatically updated from the other menu items... e.g. if item #3 currently has 20, and is changed to 200 with this call, item#0 will automatically be set to 180 (200-20). Slightly annoying!
 
@@ -214,7 +217,7 @@ def encodeSetStatusBar(menuItemId, unreadAlerts, itemBitmap):
     payload += struct.pack(">H", 0)
     payload += struct.pack(">H", 0)
     payload += struct.pack(">H", 0)
-    payload += itemBitmap
+    payload += bitmap
 
     return encodeLVMessage(MSG_SETSTATUSBAR, payload)
 
@@ -245,11 +248,11 @@ def encodeSetMenuSettings(vibrationTime, initialMenuItemId):
 
     return encodeLVMessage(MSG_SETMENUSETTINGS, struct.pack(">BBB", vibrationTime, 12, initialMenuItemId)) # 12 is "font size" - doesn't seem to change anything though!
 
-def encodeGetAlertResponse(totalCount, unreadCount, alertIndex, timestampText, headerText, bodyTextChunk, bitmap):
+def encodeGetAlertResponse(totalCount, unreadCount, alertIndex, timestampText, headerText, bodyText, bitmap):
     payload = struct.pack(">BHHHBB", 0, totalCount, unreadCount, alertIndex, 0, 0)    # final 0 is for plaintext vs bitmapimage (1) strings
     payload += struct.pack(">H", len(timestampText)) + timestampText
     payload += struct.pack(">H", len(headerText)) + headerText
-    payload += struct.pack(">H", len(bodyTextChunk)) + bodyTextChunk
+    payload += struct.pack(">H", len(bodyText)) + bodyText
     payload += struct.pack(">B", 0)
     payload += struct.pack(">L", len(bitmap)) + bitmap
 

@@ -1,8 +1,28 @@
 #!/usr/bin/python
+
+# this file is licensed under MIT License
+# see LICENSE for license details
+
 import LiveView
 
 class MyServer(LiveView.Server):
     pass
 
+testPng = open("test.png").read()
+
 server = MyServer()
+server.setMenuItems([
+
+  LiveView.MenuItem(True, 0, "Menu0", testPng),
+  LiveView.MenuItem(False, 20, "Menu1", testPng),
+  LiveView.MenuItem(False, 0, "Menu2", testPng),
+  LiveView.MenuItem(True, 0, "Menu3", testPng),
+
+])
+
+
 server.start()
+
+
+# self.__send(messages.encodeGetAlertResponse(20, 4, 15, "TIME", "HEADER", "01234567890123456789012345678901234567890123456789", self.testPng))
+# self.__send(messages.encodeDisplayPanel("TOOOOOOOOOOOOOOOOOP", "BOTTTTTTTTTTTTTTTTTOM", self.testPng, False))
