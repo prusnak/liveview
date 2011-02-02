@@ -65,7 +65,7 @@ class Server:
 
                 elif isinstance(msg, messages.DisplayCapabilities):
                     deviceCapabilities = msg
-                    self.__send(messages.encodeSetMenuSize(len(self.menuItems))
+                    self.__send(messages.encodeSetMenuSize(len(self.menuItems)))
                     self.__send(messages.encodeSetMenuSettings(self.menuVibrationTime, 0))
 
                 elif isinstance(msg, messages.GetTime):
