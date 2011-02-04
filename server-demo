@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# this file is licensed under MIT License
+# this file is licensed under the Modified BSD License
 # see LICENSE for license details
 
 import LiveView
