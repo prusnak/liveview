@@ -222,7 +222,7 @@ def encodeSetStatusBar(menuItemId, unreadAlerts, bitmap):
     return encodeLVMessage(MSG_SETSTATUSBAR, payload)
 
 def encodeGetTimeResponse(time, is24HourDisplay):
-    return encodeLVMessage(MSG_GETTIME_RESP, struct.pack(">LB", time, not is24HourDisplay))
+    return encodeLVMessage(MSG_GETTIME_RESP, struct.pack(">LB", long(time), not is24HourDisplay))
 
 def encodeNavigationResponse(result):
     return encodeLVMessage(MSG_NAVIGATION_RESP, struct.pack(">B", result))
