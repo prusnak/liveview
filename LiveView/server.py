@@ -35,6 +35,12 @@ class Server:
         self.__client.send(messages.encodeGetCaps())
         self.__loop()
 
+    def __getLocalTime(self):
+	if time.daylight:
+		return time.time()-time.altzone
+	else:
+		return time.time()-time.timezone
+
     def __del__(self):
         if self.__server:
             self.__server.close()
@@ -56,7 +62,7 @@ class Server:
                 self.__send(messages.encodeAck(msg.messageId))
 
                 if isinstance(msg, messages.GetMenuItems):
-                    for idx, item in enumerate(self.items):
+                    for idx, item in enumerate(self.menuItems):
                         self.__send(messages.encodeGetMenuItemResponse(idx, item.isAlert, item.unreadCount, item.text, item.bitmap))
 
                 elif isinstance(msg, messages.GetMenuItem):
@@ -69,7 +75,7 @@ class Server:
                     self.__send(messages.encodeSetMenuSettings(self.menuVibrationTime, 0))
 
                 elif isinstance(msg, messages.GetTime):
-                    self.__send(messages.encodeGetTimeResponse(time.time(), self.is24HourClock))
+                    self.__send(messages.encodeGetTimeResponse(self.__getLocalTime(), self.is24HourClock))
 
                 elif isinstance(msg, messages.DeviceStatus):
                     self.__send(messages.encodeDeviceStatusAck())
